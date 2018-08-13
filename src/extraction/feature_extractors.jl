@@ -4,6 +4,7 @@ export
     set_dual_feature!,
     set_neighbor_features!,
     set_behavioral_features,
+    LaneIDFeatureExtractor,
     CoreFeatureExtractor,
     TemporalFeatureExtractor,
     WellBehavedFeatureExtractor,
@@ -72,6 +73,40 @@ function set_neighbor_features!(features::Vector{Float64}, i::Int,
 end
 
 ##################### Specific Feature Extractors #####################
+#Raunak adding separate feature extractor for lane id
+type LaneIDFeatureExtractor <: AbstractFeatureExtractor
+    features::Vector{Float64}
+    num_features::Int64
+    function LaneIDFeatureExtractor()
+	#println("Raunak says: LaneIDFeatureExtractor being constructed")
+	num_features = 1
+        return new(zeros(Float64, num_features), num_features)
+    end
+end
+Base.length(ext::LaneIDFeatureExtractor) = ext.num_features
+function feature_names(ext::LaneIDFeatureExtractor)
+    return String["laneid"]
+end
+
+function feature_info(ext::LaneIDFeatureExtractor)
+    return Dict{String, Dict{String, Any}}(
+        "laneid"  =>  Dict("high"=>6.,     "low"=>0.),
+    )
+end
+function AutomotiveDrivingModels.pull_features!(
+        ext::LaneIDFeatureExtractor, 
+        rec::SceneRecord,
+        roadway::Roadway, 
+        veh_idx::Int,  
+        models::Dict{Int, DriverModel} = Dict{Int, DriverModel}(),
+        pastframe::Int = 0)
+    scene = rec[pastframe]
+    veh_ego = scene[veh_idx]
+    idx = 0
+    ext.features[idx+=1] = convert(Float64,veh_ego.state.posF.roadind.tag.lane)
+    return ext.features
+end
+ 
 
 type CoreFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
@@ -236,7 +271,7 @@ function AutomotiveDrivingModels.pull_features!(
     idx = 0
     ext.features[idx+=1] = convert(Float64, get(
         IS_COLLIDING, rec, roadway, veh_idx, pastframe))
-    ext.features[idx+=1] = convert(Float64, d_ml < -1.0 || d_mr < -1.0)
+    ext.features[idx+=1] = convert(Float64, d_ml < -0.1 || d_mr < -0.1)
     ext.features[idx+=1] = convert(Float64, veh_ego.state.v < 0.0)
     ext.features[idx+=1] = convert(Float64, get(
         ROADEDGEDIST_LEFT, rec, roadway, veh_idx, pastframe

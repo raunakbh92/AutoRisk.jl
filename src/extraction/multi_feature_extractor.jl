@@ -11,7 +11,9 @@ type MultiFeatureExtractor <: AbstractFeatureExtractor
     features::Vector{Float64}
     num_features::Int64
     function MultiFeatureExtractor(extractors::Vector{AbstractFeatureExtractor})
-        lengths = [length(subext) for subext in extractors]
+	#println("Raunak says: Here is the construcor for mfe")
+	#println("Extractors = $extractors")
+	lengths = [length(subext) for subext in extractors]
         num_features = sum(lengths)
         features = zeros(Float64, num_features)
         new(extractors, lengths, features, num_features)
@@ -29,6 +31,7 @@ function Convert(MultiFeatureExtractor;
         extract_car_lidar_range_rate::Bool = true,
         extract_road_lidar::Bool = false
     )
+    println("Raunak says: This is the MultiFeatureExtractor constructor being used")
     subexts::Vector{AbstractFeatureExtractor} = []
     if extract_core
         push!(subexts, CoreFeatureExtractor())
@@ -92,7 +95,8 @@ end
 # alternate constructor containing all sub-extractors
 function MultiFeatureExtractor()
     subexts = [
-        CoreFeatureExtractor(),
+	LaneIDFeatureExtractor(),	# Raunak added
+	CoreFeatureExtractor(),
         TemporalFeatureExtractor(),
         WellBehavedFeatureExtractor(),
         NeighborFeatureExtractor(),
@@ -102,6 +106,7 @@ function MultiFeatureExtractor()
         RoadLidarFeatureExtractor()
     ]
 
+    println("Raunak says: This is the MultiFeatureExtractor constructor being used") 
    return MultiFeatureExtractor(subexts)
 end
 
@@ -109,7 +114,7 @@ end
 function MultiFeatureExtractor(filepath::String)
     # open the file
     file = h5open(filepath, "r")
-
+    println("Raunak says: filepath mfe constructor")
     # get feature set information from file attributes
     extract_core = a_read(file, "extract_core")
     extract_temporal = a_read(file, "extract_temporal")
