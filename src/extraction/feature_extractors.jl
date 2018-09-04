@@ -103,7 +103,21 @@ function AutomotiveDrivingModels.pull_features!(
     scene = rec[pastframe]
     veh_ego = scene[veh_idx]
     idx = 0
-    ext.features[idx+=1] = convert(Float64,veh_ego.state.posF.roadind.tag.lane)
+
+    # Discrete lane id
+    #ext.features[idx+=1] = convert(Float64,veh_ego.state.posF.roadind.tag.lane)
+
+    # Continuous lane id
+    # Adds a continuous component to the discrete lane id 
+    # depending on where in the lane the car is
+    # This continuous component is normalized by the lane width
+    discreteComponent = veh_ego.state.posF.roadind.tag.lane
+    continuousComponent = (veh_ego.state.posF.t)/DEFAULT_LANE_WIDTH
+    
+    
+    continuousLaneID = discreteComponent + continuousComponent
+    
+    ext.features[idx+=1] = convert(Float64,continuousLaneID)
     return ext.features
 end
  
