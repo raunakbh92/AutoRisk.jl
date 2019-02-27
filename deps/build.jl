@@ -27,7 +27,8 @@ end
 Pkg.build("AutomotiveDrivingModels")
 Pkg.build("BayesNets")
 
-# checkout specific branches
+#=
+checkout specific branches
 checkouts = [
     ("ForwardNets", "nextgen")
 ]
@@ -35,3 +36,4 @@ checkouts = [
 for (pkg, branch) in checkouts
     Pkg.checkout(pkg, branch)
 end
+=#
